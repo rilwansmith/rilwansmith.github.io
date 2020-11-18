@@ -1,2 +1,2 @@
 # rilwansmith.github.io
-My personal github pages
+My personal github page
