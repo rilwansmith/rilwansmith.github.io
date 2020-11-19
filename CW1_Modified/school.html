@@ -1,0 +1,202 @@
+<html lang="en">
+    <i class="fas fa-coffee"></i>
+<head>
+    <title v-text="sitename"></title>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="subjects.js"></script>
+    <link rel="stylesheet" type="text/css" href="app.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdnjs.cloudfare.com"
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"> 
+</head>
+
+<body>
+    <i class="fas fa-truck-monster"></i> 
+    <div id="app">
+        <header>
+            <div class="navbar navbar-default">
+                <div class="navbar-header">
+                    <h1 v-text="sitename"></h1>
+                </div>
+                <div class="nav navbar-nav navbar-right cart">
+                    <button type="button" class="btn btn-default btn-lg" v-on:click='showCart'>
+
+                        <button type="button" class="btn btn-default btn-lg" v-on:click='showCart'></button>
+                        
+                        <!-- <button type="button" class="btn btn-default btn-lg" v-on:click='openWindow("checkout/index.html")'> -->
+
+                        <span class="glyphicon glyphicon-shopping-cart">{{cartItemCount}}</span> Cart
+                    </button>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div v-if='showSubject' class="main">
+            <!-- Commented out 
+                <div class="sidebar">
+                <section>
+                    <p><input type="radio" id="title">
+                        <label for="title">Subject</label>
+                    </p>
+                    <p><input type="radio" id="location">
+                        <label for="location">Location</label>
+                    </p>
+                    <p><input type="radio" id="price">
+                        <label for="price">Price</label>
+                    </p>
+                    <p><input type="radio" id="spaces">
+                        <label for="spaces">Spaces</label>
+                    </p>
+                </section>
+                <section>
+                    <p><input type="radio" id="ascending">
+                        <label for="ascending">Ascending</label>
+                    </p>
+                    <p><input type="radio" id="descending">
+                        <label for="descending">Descending</label>
+                    </p>
+                </section>
+            </div> 
+        -->
+                <div v-for="subject in sortedSubjects">
+                    <div class="col-md-2 col-md-offset-1">
+                        <figure>
+                            <img v-bind:src="subject.image">
+                        </figure>
+                    </div>
+                    <div class="col-md-6 col-md-offset-2 description">
+                        <h1 v-text="subject.title"></h1>
+                        <!-- <p>Subject: {{ subject.title }}</p> -->
+                        <p>Location: {{ subject.location }}</p>
+                        <p class="price">Price: {{subject.price | formatPrice}}</p>
+                        <p>Spaces: {{subject.spaces}}</p>
+
+                        <button class=" btn btn-primary btn-lg" v-on:click='addToCart(subject)'
+                            v-if='canAddToCart(subject)'>Add to cart</button>
+                        <button disabled="true" class=" btn btn-primary btn-lg" v-else>Add to cart</button>
+
+                        <span v-if='subject.spaces === cartCount(subject.id)'>All out!</span>
+                        <span v-else-if="subject.spaces - cartCount(subject.id) < 5">
+                            Only {{subject.spaces - cartCount(subject.id)}} left!
+                        </span>
+                        <span v-else>Buy now!</span>
+                    </div>
+                </div>
+            </div>
+            <div v-else>
+                <!-- <div class="col-md-2 col-md-offset-1">Cart</div> -->
+                <div class="col-md-6 col-md-offset-1">
+                    <ul v-for="subject in cart1" :key="subject.id">
+                        <p>Subject: {{ subject.title }}</p>
+                        <p>Location: {{ subject.location }}</p>
+                        <p class="price">Price: {{subject.price | formatPrice}}</p>
+                        <!-- <p>Quantity: {{subject.quantity}}</p> -->
+                        <button @click="updateCart(subject, 'subtract')" class="cart__button">
+                            -
+                        </button>
+                        <span class="cart__quantity">{{ subject.quantity }}</span>
+                        <button @click="updateCart(subject, 'add')" class="cart__button">
+                            +
+                        </button>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        var webstore = new Vue({
+            el: '#app',
+            data: {
+                sitename: 'Rilwan Smith(RS1659) Coursework 1 Web App with Vue js',
+                subjects: subjects,
+                cart: [],
+                showSubject: true
+            },
+            methods: {
+                addToCart(subject) {
+                    this.cart.push(subject.id);
+                },
+                showCart() {
+                    // this.showSubject = this.showSubject ? false : true;
+                    window.open("checkout/index.html");
+                },
+                canAddToCart(subject) {
+                    return subject.spaces > this.cartCount(subject.id);
+                },
+                cartCount(id) {
+                    let count = 0;
+                    for (let i = 0; i < this.cart.length; i++) {
+                        if (this.cart[i] === id) {
+                            count++;
+                        }
+                    }
+                    return count;
+                },
+                updateCart(subject, updateType) {
+                    for (let i = 0; i < this.subjects.length; i++) {
+                        if (this.subjects[i].id === subject.id) {
+                            if (updateType === 'subtract') {
+                                if (this.subjects[i].quantity !== 0) {
+                                    this.subjects[i].quantity--;
+                                }
+                            } else {
+                                this.subjects[i].quantity++;
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            },
+            computed: {
+                cartItemCount() {
+                    return this.cart.length;
+                },
+
+                sortedSubjects() {
+                    let subjectsArray = this.subjects.slice(0);
+                    function compare(a, b) {
+                        if (a.price > b.price)
+                            return 1;
+                        if (a.price < b.price)
+                            return -1;
+                        return 0;
+                    }
+                    return subjectsArray.sort(compare);
+                },
+                cart1() {
+                    return this.subjects.filter(subject => subject.quantity > 0);
+                },
+                totalQuantity() {
+                    return this.subjects.reduce(
+                        (total, subject) => total + subject.quantity, 0
+                    );
+                }
+
+            },
+            filters: {
+                formatPrice(price) {
+                    if (!parseInt(price)) {
+                        return "";
+                    }
+                    if (price > 99999) {
+                        var priceString = (price / 100).toFixed(2);
+                        var priceArray = priceString.split("").reverse();
+                        var index = 3;
+                        while (priceArray.length > index + 3) {
+                            priceArray.splice(index + 3, 0, ",");
+                            index += 4;
+                        }
+                        return "£" + priceArray.reverse().join("");
+                    } else {
+                        return "£" + (price / 100).toFixed(2);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
